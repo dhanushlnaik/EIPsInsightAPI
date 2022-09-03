@@ -208,10 +208,16 @@ If you are interested in assuming ownership of an EIP, send a message asking to 
 The current EIP editors are
 
 - Alex Beregszaszi (@axic)
+<<<<<<< HEAD
 - Gavin John (@Pandapip1)
 - Greg Colvin (@gcolvin)
 - Matt Garnett (@lightclient)
 - Micah Zoltu (@MicahZoltu)
+=======
+- Matt Garnett (@lightclient)
+- Micah Zoltu (@MicahZoltu)
+- Greg Colvin (@gcolvin)
+>>>>>>> f5e51c8f2d6281b6e36564190b3085842b9f4703
 - Sam Wilson (@SamWilsn)
 
 Emeritus EIP editors are 
@@ -223,8 +229,11 @@ Emeritus EIP editors are
 - Nick Savers (@nicksavers)
 - Martin Becze (@wanderer)
 
+<<<<<<< HEAD
 If you would like to become an EIP editor, please check [EIP-5069](./eip-5069.md).
 
+=======
+>>>>>>> f5e51c8f2d6281b6e36564190b3085842b9f4703
 ## EIP Editor Responsibilities
 
 For each new EIP that comes in, an editor does the following:
