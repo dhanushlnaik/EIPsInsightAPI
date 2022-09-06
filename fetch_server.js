@@ -282,18 +282,14 @@ app.get('/statusPage', async(req,res) =>{
 
 let port = process.env.PORT;
 if (port == null || port == "") {
-<<<<<<< HEAD
   port = 3821;
 }
 
 app.listen(port,()=>{
     console.log('Server is running at port 3821');
-=======
-  port = 3000;
-}
+    port = 3000;
+})
 
 app.listen(port,()=>{
     console.log('Server is running at port 3000');
->>>>>>> f5e51c8f2d6281b6e36564190b3085842b9f4703
 })
-  
