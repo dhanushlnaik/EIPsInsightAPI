@@ -16,13 +16,12 @@
     "mocha": "^10.0.0",
     "node-fetch": "^2.6.7",
     "node-schedule": "^2.1.0",
-    "nodemon": "^2.0.16",
     "package.json": "^2.0.1",
     "shelljs": "^0.8.5"
   },
   "devDependencies": {
     "mocha-junit-reporter": "^2.0.2",
     "node-fetch": "^2.6.7",
-    "nodemon": "^2.0.16"
+    "nodemon": "^2.0.20"
   }
 }

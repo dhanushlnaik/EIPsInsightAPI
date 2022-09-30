@@ -1,5 +1,7 @@
 const express  = require('express');
 const cors  = require('cors');
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 
 const fs = require('fs');
 var process = require("process");
@@ -7,12 +9,18 @@ var process = require("process");
 const matter = require('gray-matter');
 const fetch = require('node-fetch');
 const path = require('path');
-const { isFunction } = require('util');
-const e = require('express');
-const dirPath = path.join(__dirname,'EIPs');
+
+
+const dirPath = path.join(__dirname,'EIPS');
+
+dotenv.config({ path: "./config.env" });
+require("./db/conn");
 
 const app = express();
 app.use(cors());
+
+// it will display the data in json when post.
+app.use(express.json());
 
 console.log(dirPath);
 const dir = dirPath;
@@ -31,6 +39,39 @@ let statusEIP = ['Final','Draft','Review','Last Call','Stagnant','Withdrawn','Li
 let categoryEIP = ['Networking','ERC','Core','Interface'];
 
 let typeEIP = ['Standards Track', 'Meta', 'Informational' ];
+
+
+let allinfo = [];
+
+for(let curStatus of statusEIP)
+{
+  let obj = {};
+  let curarr = [];  
+  obj[curStatus] = curarr;
+  
+  allinfo.push(obj);
+}
+
+function allinfofun(datainfo, status)
+{
+      for(let obj of allinfo)
+      {
+          let flag = 0 ;
+          // console.log(obj);
+          for(let statusObj in obj)
+          {
+              if(statusObj === status)
+              {
+                  obj[status].push(datainfo);
+                  flag=1;
+                  break;
+              }
+          }
+          if(flag)
+              break;
+
+      }
+  }
 
 
 let statusPage = {};
@@ -248,7 +289,7 @@ function homePageData(type,category,status)
             chartForHomeAndMonthly(type, category, status);
             typeChartData(type, category, status);
             statusPageData(type, category, status);
-
+            allinfofun(data , status);
          });
     });
 
@@ -263,6 +304,12 @@ function homePageData(type,category,status)
 
 readFiles(dir);
 
+// link the router file to app.js
+app.use(require("./router/auth"));
+
+app.get('/allinfo' ,async(req, res)=>{
+    res.send(allinfo);
+})
 
 app.get('/overallData', async(req,res)=>{ 
     res.send(homeobj);
