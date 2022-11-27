@@ -3,6 +3,19 @@ const cors  = require('cors');
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
+const d = new Date();
+let stringDate = d.toString();
+
+let cur_month = stringDate.substring(4,7);
+let cur_year = stringDate.substring(11,15);
+
+// dotenv.config({ path: "./config.env" });
+// require("./db/conn");
+
+// const monthlyUpdate = require('./update_server');
+
+// const {StatusModel} = require('./model/eipSchema');
+
 const fs = require('fs');
 var process = require("process");
 
@@ -10,11 +23,40 @@ const matter = require('gray-matter');
 const fetch = require('node-fetch');
 const path = require('path');
 
+let monthlyUpdate = {};
+let pasteip_data = {};
+let yearly_data = {};
+
+const {Eip_model ,status_schema , past_eipschema , yearly_schema} = require('./model/eipSchema');
+
+const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/eips", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}, (err)=>{
+    if(err)
+    console.log(err);
+    else
+    console.log("eips DB1 connected");
+});
+
+const conn2 = mongoose.createConnection("mongodb://127.0.0.1:27017/eipsdata", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}, (err)=>{
+    if(err)
+    console.log(err);
+    else
+    console.log("eips DB2 connected");
+})
+
+const StatusModel = conn.model('statuseipinfo', status_schema);
+const YearlyModel = conn2.model('year' , yearly_schema);
+const PastDataModel = conn2.model('past_eip' , past_eipschema ); 
+
 
 const dirPath = path.join(__dirname,'EIPS');
 
-dotenv.config({ path: "./config.env" });
-require("./db/conn");
+
 
 const app = express();
 app.use(cors());
@@ -25,20 +67,22 @@ app.use(express.json());
 console.log(dirPath);
 const dir = dirPath;
 
+let rawData = [];
+
 
 let countMeta = 0 ;
 let countInformational = 0 ;
-let countStandardsTrack = 0;
+let countStandardTrack = 0;
 let countERC = 0;
 let countCore = 0;
 let countNetworking = 0 ; 
 let countInterface = 0 ;
 
-let statusEIP = ['Final','Draft','Review','Last Call','Stagnant','Withdrawn','Living'];
+let statusEIP = ['Final','Draft','Review','Last_Call','Stagnant','Withdrawn','Living'];
 
 let categoryEIP = ['Networking','ERC','Core','Interface'];
 
-let typeEIP = ['Standards Track', 'Meta', 'Informational' ];
+let typeEIP = ['Standard_Track', 'Meta', 'Informational' ];
 
 
 let allinfo = [];
@@ -54,6 +98,9 @@ for(let curStatus of statusEIP)
 
 function allinfofun(datainfo, status)
 {
+    if(status == 'Last Call')
+    status = 'Last_Call';
+
       for(let obj of allinfo)
       {
           let flag = 0 ;
@@ -81,7 +128,7 @@ for(let varStatus of statusEIP)
 
     for(let varType of typeEIP)
     {
-        if(varType == 'Standards Track' )
+        if(varType == 'Standard_Track' )
         {
             let temp2 = {};
 
@@ -110,7 +157,7 @@ for(let varType of typeEIP)
 {
     let temp = {};
     let flag = 0;
-    if(varType == 'Standards Track')
+    if(varType == 'Standard_Track')
     {
 
         for(let varCategory of categoryEIP)
@@ -146,8 +193,12 @@ for(let varStatus of statusEIP)
 
 function chartForHomeAndMonthly(type, category, status)
 {
+    if(status == 'Last Call')
+        status = 'Last_Call';
+
     for(let statusVar in chart2)
     {
+        
         if(statusVar == status && type == 'Standards Track')
         {
             for(let categoryVar in chart2[statusVar])
@@ -169,7 +220,7 @@ function typeChartData(type,category,status)
          
    for( let childObj of ar1 )
    {
-        if( childObj == type  && type == 'Standards Track' )
+        if( childObj == 'Standard_Track'  && type == 'Standards Track' )
         {    
          let ar2 = Object.keys( typeChart[ childObj ] );
 
@@ -201,15 +252,19 @@ function typeChartData(type,category,status)
 
 function statusPageData(type,category,status)
 {
+    if(status == 'Last Call')
+    status = 'Last_Call';
+
    for(let varStatus in statusPage)
    {
       if(varStatus == status && type == 'Standards Track')
       {
-        for(let varCategory in statusPage[varStatus][type])
+        let typeCorr = 'Standard_Track';
+        for(let varCategory in statusPage[varStatus][typeCorr])
         {
             if(category == varCategory)
             {
-                statusPage[varStatus][type][varCategory] ++;
+                statusPage[varStatus][typeCorr][varCategory] ++;
                 break;
             }
         }
@@ -237,7 +292,7 @@ function homePageData(type,category,status)
     else if(type == 'Informational')
     {countInformational++;}
     else if(type == 'Standards Track')
-    countStandardsTrack++;
+    countStandardTrack++;
 
     if(category == 'ERC')
     countERC++;
@@ -254,9 +309,51 @@ function homePageData(type,category,status)
     homeobj["Interface"]=countInterface;
     homeobj["Core"]=countCore; 
     homeobj["Meta"]=countMeta;
-    homeobj["Standards Track"]=countStandardsTrack;
+    homeobj["Standard_Track"]=countStandardTrack;
     homeobj["Informational"]=countInformational;
 }
+
+ function addRawData(content)
+ {
+    rawData.push(content);
+ }
+
+ function getData()
+ {
+    StatusModel.find({} , (err,res)=>{
+        if(err)
+        console.log(err);
+        else
+        {
+            
+            monthlyUpdate = (res);
+            // console.log(monthlyUpdate);          
+             
+            // return monthlyUpdate;
+            // module.exports = monthlyUpdate;
+        }
+    });
+
+    YearlyModel.find({} , (err, res)=>{
+        if(err)
+        console.log(err);
+        else
+        {
+            yearly_data = res;
+        }
+    })
+
+    PastDataModel.find({}, (err ,res)=>{
+        if(err)
+        console.log(err);
+        else
+        {
+            pasteip_data = res;
+        }
+    })
+
+
+ }
 
  function readFiles(dir){
   
@@ -285,6 +382,7 @@ function homePageData(type,category,status)
             let status = eipfile.data.status;
             let category = eipfile.data.category;
 
+            addRawData(eipfile);
             homePageData(type, category, status);
             chartForHomeAndMonthly(type, category, status);
             typeChartData(type, category, status);
@@ -304,6 +402,8 @@ function homePageData(type,category,status)
 
 readFiles(dir);
 
+getData();
+
 // link the router file to app.js
 app.use(require("./router/auth"));
 
@@ -315,16 +415,24 @@ app.get('/overallData', async(req,res)=>{
     res.send(homeobj);
 })
 
-app.get('/chartData-Home-Monthly', async(req,res)=>{
-    res.send(chart2);
+app.get('/pastData', async(req,res)=>{
+    res.send(pasteip_data);
 })
 
-app.get('/typePage', async(req,res)=>{
-    res.send(typeChart);
+app.get('/yearlydata', async(req,res)=>{
+    res.send(yearly_data);
 })
 
 app.get('/statusPage', async(req,res) =>{
     res.send(statusPage);
+})
+
+app.get('/currentMonth' , async(req ,res)=>{
+    res.send(monthlyUpdate);
+})
+
+app.get('/rawData' , async(req ,res)=>{
+    res.send(rawData);
 })
 
 let port = process.env.PORT;

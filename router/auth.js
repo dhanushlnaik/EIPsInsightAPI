@@ -2,8 +2,8 @@ const { application } = require("express");
 const express = require("express");
 const router = express.Router();
 
-require("../db/conn");
-const form = require("../model/formSchema");
+const form = require("../db/conn");
+// const form = require("../model/formSchema");
 
 router.get("/", (req, res) => {
   res.send(`Hello world from server router.js`);
