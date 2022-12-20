@@ -56,7 +56,7 @@ router.post('/register', async (req, res) => {
   console.log(req.body);
   console.log(req.body.Draft);
   if (!name) {
-    return res.status(422).json({ error: "plz fill the all section!!" });
+    return res.status(422).json({ error: "plz filled the all section!!" });
   }
 
   try {
@@ -83,7 +83,7 @@ router.post('/register', async (req, res) => {
     if (userRegistered) {
       res.status(201).json({ message: "user registered successfully" });
     } else {
-      res.status(500).json({ error: "failed registring the user" });
+      res.status(500).json({ error: "failed registered" });
     }
   } catch (err) {
     console.log(err);

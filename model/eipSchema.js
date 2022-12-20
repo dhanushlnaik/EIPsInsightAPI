@@ -16,7 +16,8 @@ const status_schema  = new mongoose.Schema({
     Core : [String],
     Interface : [String],
     Meta : [String],
-    Informational : [String]
+    Informational : [String],
+    Undefined : [String]
 })
 
 const past_eipschema = new mongoose.Schema({

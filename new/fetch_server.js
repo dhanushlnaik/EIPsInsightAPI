@@ -3,18 +3,10 @@ const cors  = require('cors');
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
-const d = new Date();
-let stringDate = d.toString();
-
-let cur_month = stringDate.substring(4,7);
-let cur_year = stringDate.substring(11,15);
-
 // dotenv.config({ path: "./config.env" });
 // require("./db/conn");
 
-// const monthlyUpdate = require('./update_server');
-
-// const {StatusModel} = require('./model/eipSchema');
+const monthlyUpdate = require('./database_server');
 
 const fs = require('fs');
 var process = require("process");
@@ -22,37 +14,6 @@ var process = require("process");
 const matter = require('gray-matter');
 const fetch = require('node-fetch');
 const path = require('path');
-
-// let monthlyUpdate = {};
-
-let pasteip_data = {};
-let yearly_data = {};
-
-const {Eip_model ,status_schema , past_eipschema , yearly_schema} = require('./model/eipSchema');
-
-const conn = mongoose.createConnection("mongodb+srv://admin-ritik:ritikapi21@cluster0.elbmwff.mongodb.net/eips", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, (err)=>{
-    if(err)
-    console.log(err);
-    else
-    console.log("eips DB1 connected");
-});
-
-const conn2 = mongoose.createConnection("mongodb+srv://admin-ritik:ritikapi21@cluster0.elbmwff.mongodb.net /eipsdata", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, (err)=>{
-    if(err)
-    console.log(err);
-    else
-    console.log("eips DB2 connected");
-})
-
-const StatusModel = conn.model('statuseipinfo', status_schema);
-const YearlyModel = conn2.model('year' , yearly_schema);
-const PastDataModel = conn2.model('past_eip' , past_eipschema ); 
 
 
 const dirPath = path.join(__dirname,'EIPS');
@@ -319,44 +280,6 @@ function homePageData(type,category,status)
     rawData.push(content);
  }
 
- function getData()
- {
-    // StatusModel.find({} , (err,res)=>{
-    //     if(err)
-    //     console.log(err);
-    //     else
-    //     {
-            
-    //         monthlyUpdate = (res);
-    //         // console.log(monthlyUpdate);          
-             
-    //         // return monthlyUpdate;
-    //         // module.exports = monthlyUpdate;
-    //     }
-    // });
-     
-
-    YearlyModel.find({} , (err, res)=>{
-        if(err)
-        console.log(err);
-        else
-        {
-            yearly_data = res;
-        }
-    })
-
-    PastDataModel.find({}, (err ,res)=>{
-        if(err)
-        console.log(err);
-        else
-        {
-            pasteip_data = res;
-        }
-    })
-
-
- }
-
  function readFiles(dir){
   
  fs.readdir(dir, function(err,files){
@@ -401,26 +324,11 @@ function homePageData(type,category,status)
 
 }
 
-function getData2(year , month)
-{
-     StatusModel.find({"Year" : year , "Month" : month} , (err , res)=>{
-        if(err)
-        console.log(err);
-        else
-        {
-            return res;
-        }
-     })        
-}
-
 
 readFiles(dir);
 
-getData();
-
 // link the router file to app.js
 app.use(require("./router/auth"));
-app.use(require("./index"));
 
 app.get('/allinfo' ,async(req, res)=>{
     res.send(allinfo);
@@ -430,23 +338,20 @@ app.get('/overallData', async(req,res)=>{
     res.send(homeobj);
 })
 
-app.get('/pastData', async(req,res)=>{
-    res.send(pasteip_data);
+app.get('/chartData-Home-Monthly', async(req,res)=>{
+    res.send(chart2);
 })
 
-app.get('/yearlydata', async(req,res)=>{
-    res.send(yearly_data);
+app.get('/typePage', async(req,res)=>{
+    res.send(typeChart);
 })
 
 app.get('/statusPage', async(req,res) =>{
     res.send(statusPage);
 })
 
-app.get('/currentMonth/:year/:month' , async(req ,res)=>{
-    let year = req.params.year;
-    let month = req.params.month;
-
-    res.send(getData2(year , month));
+app.get('/currentMonth' , async(req ,res)=>{
+    res.send(monthlyUpdate);
 })
 
 app.get('/rawData' , async(req ,res)=>{
@@ -455,7 +360,7 @@ app.get('/rawData' , async(req ,res)=>{
 
 let port = process.env.PORT;
 
-if(port == null || port == "") {
+if (port == null || port == "") {
   port = 3821;
 }
 
