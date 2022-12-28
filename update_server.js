@@ -3,7 +3,6 @@ const cors  = require('cors');
 const fs = require('fs');
 const dotenv = require("dotenv");
 const path = require('path');
-// const collection = require('./test');
 
 let monthlyUpdate = {};
 
@@ -13,6 +12,7 @@ const dirPath = path.join(__dirname,'EIPS');
 const {Eip_model ,status_schema} = require('./model/eipSchema');
 const mongoose = require('mongoose');
 
+//Connecting to "eipsdata" database
 mongoose.connect("mongodb://localhost:27017/eipsdata" ,{
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -23,6 +23,12 @@ mongoose.connect("mongodb://localhost:27017/eipsdata" ,{
     console.log("eips monthly connected");}
     );
 
+//Connecting to "eips" database
+
+//Note: Here we are using .createConnection instead of .connect
+//Beacuse we cant connect more than one database using .connect
+//Thats why we are using .createConnection to connect to other database 
+
 const conn = mongoose.createConnection("mongodb://localhost:27017/eips", {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -32,10 +38,9 @@ const conn = mongoose.createConnection("mongodb://localhost:27017/eips", {
     else
     console.log("eips all data connected");
 });
-
 const StatusModel = conn.model('statuseipinfo', status_schema);
 
-
+//Creating express() instance 
 const app = express();
 app.use(cors());
 
@@ -45,6 +50,8 @@ const d = new Date();
 let stringDate = d.toString();
 let full_curMonth;
 let cur_month = stringDate.substring(4,7);
+
+// Converting month half names to full names
 
 if(cur_month == "Jan")
 full_curMonth = "January";
@@ -76,7 +83,7 @@ let categoryEIP = ['Networking','ERC','Core','Interface','Meta', 'Informational'
 let new_files = {};
 let cur_month_data = {};
 
-
+//Creating cur_month_data object to store eip name temporarily  
 for(let status of statusEIP)
 {
     let newObj= {};   
@@ -92,10 +99,10 @@ for(let status of statusEIP)
     
 }
 
+// Reading eips that had been added in the current monnth from server
 readFiles();
 
-// setTimeout(send , 2000);
-
+// updating eip database upon any change
 function update_eips(eip , status ,category , type)
 {
     Eip_model.updateOne({"eip" : eip} , {"status" : status , "category" : category , "type" : type }, (err)=>{
@@ -112,17 +119,11 @@ function update_eips(eip , status ,category , type)
 function compare2(eip , type ,category , status)
 {
     Eip_model.find({"eip" : eip} ,(err , result) =>{
-
-        // console.log(result + "here");
         
           if(err)
           console.log(err);
           else if(result.length == 0)
           {
-            // console.log(result);
-
-            //   if(category == undefined )
-            //   category = 'Undefined';
 
               Eip_model.create({"eip": eip , "type" : type , "category": category, "status" : status}, (err)=>{
                 
