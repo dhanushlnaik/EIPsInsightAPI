@@ -24,6 +24,7 @@ app.listen(5000, () => {
     });
 });
 
+// for /getAll API
 app.get("/getAll", async (req, res) => {
     try{
         collection.find({}).toArray((error, result) => {
