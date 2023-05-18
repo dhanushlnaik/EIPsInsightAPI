@@ -442,6 +442,8 @@ app.get('/statusPage', async(req,res) =>{
     res.send(statusPage);
 })
 
+// For /currentMonth API
+
 app.get('/currentMonth/:year/:month' , async(req ,res)=>{
     let year = req.params.year;
     let month = req.params.month;
